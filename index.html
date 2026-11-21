@@ -1,20 +1,119 @@
 <!doctype html>
 <html lang="tg">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#123d2b"><link rel="manifest" href="manifest.webmanifest">
-<title>Китобхонаи Шайхул ислом муҷаддид Абу Муҳаммад Маданӣ, алломаи Хуросон</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123d2b">
+<title>Китобхонаи Абу Муҳаммад Маданӣ</title>
 <style>
-:root{color-scheme:dark;--bg:#0d1712;--panel:#17271e;--gold:#d6b45b;--txt:#f5f1e5}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,sans-serif}header{padding:28px 18px;background:linear-gradient(135deg,#123d2b,#091a12);border-bottom:2px solid var(--gold);text-align:center}h1{font-size:22px;line-height:1.45;margin:0 auto;max-width:850px;color:var(--gold)}header p{margin:10px 0 0;color:#e5ddc6}.wrap{max-width:1000px;margin:auto;padding:18px}.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}input,button{font:inherit;border-radius:10px;padding:12px;border:1px solid #45614f;background:var(--panel);color:var(--txt)}input{flex:1;min-width:180px}button{cursor:pointer}button.primary{background:#245b3d;border-color:var(--gold)}.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}.cat{padding:15px;text-align:center;border:1px solid #47614e;border-radius:12px;background:var(--panel);color:var(--gold)}.books{display:grid;gap:10px}.book{background:var(--panel);padding:14px;border-radius:12px;border:1px solid #344a3a;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.book small{color:#c9c0a8}.empty{color:#c9c0a8;text-align:center;padding:25px}
-</style></head><body>
-<header><h1>Китобхонаи Шайхул ислом муҷаддид Абу Муҳаммад Маданӣ, алломаи Хуросон</h1><p>Китобхонаи электронии исломӣ</p></header>
-<main class="wrap"><div class="tools"><input id="search" placeholder="Ҷустуҷӯи китоб..." aria-label="Ҷустуҷӯи китоб"><button class="primary" id="add">Иловаи китобҳои PDF</button><input id="files" type="file" accept="application/pdf,.pdf" multiple hidden></div>
-<div class="cats" id="cats"></div><h2>Китобҳо</h2><div class="books" id="books"><p class="empty">Ҳоло китоб илова нашудааст. Барои илова кардани китоб тугмаи болоро пахш кунед.</p></div></main>
+:root{color-scheme:dark;--bg:#0d1712;--panel:#17271e;--gold:#d6b45b;--txt:#f5f1e5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,sans-serif}
+header{padding:26px 16px;background:linear-gradient(135deg,#123d2b,#091a12);border-bottom:2px solid var(--gold);text-align:center}
+h1{font-size:22px;line-height:1.5;color:var(--gold);margin:0 auto;max-width:850px}
+header p{color:#e5ddc6}
+.wrap{max-width:1000px;margin:auto;padding:18px}
+input,button{font:inherit;border-radius:10px;padding:12px;border:1px solid #45614f;background:var(--panel);color:var(--txt)}
+input{width:100%;margin-bottom:12px}
+button{cursor:pointer}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin:16px 0}
+.cat{color:var(--gold);padding:13px}
+.cat.active,.primary{background:#245b3d;border-color:var(--gold)}
+.books{display:grid;gap:10px}
+.book{background:var(--panel);padding:14px;border-radius:12px;border:1px solid #344a3a}
+.book a{color:#e2c66c;margin-right:15px}
+small{color:#c9c0a8}
+.empty{text-align:center;color:#c9c0a8;padding:20px}
+#reader{display:none;margin-top:20px}
+#reader iframe{width:100%;height:75vh;border:1px solid #45614f;border-radius:10px;background:white}
+#reader button{margin:8px 0}
+</style>
+</head>
+<body>
+<header>
+<h1>Китобхонаи Шайхул ислом муҷаддид Абу Муҳаммад Маданӣ, алломаи Хуросон</h1>
+<p>Китобхонаи электронии исломӣ</p>
+</header>
+
+<main class="wrap">
+<input id="search" placeholder="Ҷустуҷӯи китоб...">
+<div class="cats" id="cats"></div>
+<h2>Китобҳо</h2>
+<div class="books" id="books">
+<p class="empty">Ҳоло китоб илова нашудааст.</p>
+</div>
+
+<section id="reader">
+<h2 id="readerTitle">Хондани китоб</h2>
+<button class="primary" id="closeReader">Бастан</button>
+<iframe id="pdfFrame" title="Хондани PDF"></iframe>
+</section>
+</main>
+
 <script>
-const categories=['Тавҳид','Ақида','Фиқҳ','Ҳадисҳо','Тафсир','Сира ва таърих','Манҳаҷ','Дигар китобҳо'];let selected='Ҳама';let items=[];
-const cats=document.getElementById('cats'),books=document.getElementById('books'),search=document.getElementById('search');
-cats.innerHTML=['Ҳама',...categories].map(c=>`<button class="cat" data-cat="${c}">${c}</button>`).join('');cats.addEventListener('click',e=>{if(e.target.dataset.cat){selected=e.target.dataset.cat;render()}});
-document.getElementById('add').onclick=()=>document.getElementById('files').click();document.getElementById('files').onchange=e=>{for(const f of e.target.files){if(f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'))items.push({name:f.name,url:URL.createObjectURL(f),file:f})}render();e.target.value=''};search.oninput=render;
-function render(){const q=search.value.toLowerCase();const shown=items.filter(x=>x.name.toLowerCase().includes(q));books.innerHTML=shown.length?shown.map((x,i)=>`<div class="book"><div><strong>${x.name}</strong><br><small>PDF</small></div><div><a href="${x.url}" target="_blank" style="color:#e2c66c">Кушодан</a> · <a href="${x.url}" download="${x.name}" style="color:#e2c66c">Боргирӣ</a></div></div>`).join(''):'<p class="empty">Китоб ёфт нашуд ё ҳоло китоб илова нашудааст.</p>'}
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-</script></body></html>
+const categories=['Ҳама','Тавҳид','Ақида','Фиқҳ','Ҳадисҳо','Тафсир','Сира ва таърих','Манҳаҷ','Дигар китобҳо'];
+
+let selected='Ҳама';
+let items=[];
+const cats=document.getElementById('cats');
+const books=document.getElementById('books');
+const search=document.getElementById('search');
+
+cats.innerHTML=categories.map(c=>
+`<button class="cat ${c==='Ҳама'?'active':''}" data-cat="${c}">${c}</button>`
+).join('');
+
+cats.addEventListener('click',e=>{
+if(!e.target.dataset.cat)return;
+selected=e.target.dataset.cat;
+document.querySelectorAll('.cat').forEach(b=>
+b.classList.toggle('active',b.dataset.cat===selected));
+render();
+});
+
+search.addEventListener('input',render);
+
+function render(){
+const q=search.value.toLowerCase();
+const shown=items.filter(x=>
+(selected==='Ҳама'||x.category===selected)&&
+x.name.toLowerCase().includes(q));
+
+books.innerHTML=shown.length?shown.map((x,i)=>`
+<div class="book">
+<strong>${x.name}</strong><br>
+<small>${x.category}</small><br><br>
+<a href="#" data-read="${i}">Хондан</a>
+<a href="${x.file}" download>Боргирӣ</a>
+</div>`).join(''):
+'<p class="empty">Китоб ёфт нашуд ё ҳоло китоб илова нашудааст.</p>';
+}
+
+books.addEventListener('click',e=>{
+const i=e.target.dataset.read;
+if(i===undefined)return;
+e.preventDefault();
+const book=items.filter(x=>
+(selected==='Ҳама'||x.category===selected)&&
+x.name.toLowerCase().includes(search.value.toLowerCase()))[Number(i)];
+if(!book)return;
+document.getElementById('readerTitle').textContent=book.name;
+document.getElementById('pdfFrame').src=book.file;
+document.getElementById('reader').style.display='block';
+document.getElementById('reader').scrollIntoView({behavior:'smooth'});
+});
+
+document.getElementById('closeReader').onclick=()=>{
+document.getElementById('reader').style.display='none';
+document.getElementById('pdfFrame').src='';
+};
+
+fetch('./books.json')
+.then(r=>{if(!r.ok)throw new Error('Файл books.json ёфт нашуд');return r.json()})
+.then(data=>{items=data;render()})
+.catch(()=>{books.innerHTML='<p class="empty">Китобҳо ҳоло илова нашудаанд. Баъд аз бор кардани рӯйхати китобҳо онҳо пайдо мешаванд.</p>'});
+</script>
+</body>
+</html>
+
+HTML
